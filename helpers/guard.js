@@ -3,7 +3,7 @@ require('../config/passport');
 const { HttpCode } = require('./constants');
 
 const guard = (req, res, next) => {
-  const [, token] = req.get('Authorization').split(' ');
+  const token = req.get('Authorization')?.split(' ')[1];
 
   passport.authenticate('jwt', { session: false }, (err, user) => {
     if (!user || err || token !== user.token) {
