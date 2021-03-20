@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const createFolderIsExist = require('../helpers/create-dir');
 
-const PORT = process.env.PORT || 3050;
+const PORT = process.env.PORT || 3000;
 
 db.then(() => {
   app.listen(PORT, async () => {
@@ -15,8 +15,9 @@ db.then(() => {
     await createFolderIsExist('public');
     await createFolderIsExist(UPLOAD_DIR);
 
-    await fs.mkdir(path.join(`${__dirname}/../public`, AVATARS_OF_USERS));
-    // await createFolderIsExist(AVATARS_OF_USERS);
+    const imageFolder = path.join(`${__dirname}/../public`, AVATARS_OF_USERS);
+    await createFolderIsExist(imageFolder);
+
     console.log(`Server running. Use our API on port: ${PORT}`);
   });
 }).catch(err => {

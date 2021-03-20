@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const Jimp = require('jimp');
 const { promisify } = require('util');
@@ -145,18 +145,25 @@ const saveAvatarToStatic = async req => {
   const id = req.user.id;
   const AVATARS_OF_USERS = process.env.AVATARS_OF_USERS;
   const pathFile = req.file.path;
-  console.log(`AAAAAAAAA ----- ${pathFile}`);
   const newNameAvatar = `${Date.now()}-${req.file.originalname}`;
+  console.log(`AAAAAAAAA ----- ${pathFile}`);
   const img = await Jimp.read(pathFile);
+  console.log('1');
 
   await img
     .autocrop()
     .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
     .writeAsync(pathFile);
+  console.log('2');
 
-  await createFolderIsExist(path.join(AVATARS_OF_USERS, id));
-  await fs.rename(pathFile, path.join(AVATARS_OF_USERS, id, newNameAvatar));
+  const pathImageFolder = path.join(process.cwd(), 'public', AVATARS_OF_USERS);
+  console.log('3');
+  await createFolderIsExist(path.join(pathImageFolder, id));
+  console.log('4');
+  await fs.rename(pathFile, path.join(pathImageFolder, id, newNameAvatar));
+  console.log('5');
   const avatarUrl = path.normalize(path.join(id, newNameAvatar));
+  console.log('6');
 
   try {
     await fs.unlink(

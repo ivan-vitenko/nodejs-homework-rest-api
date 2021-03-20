@@ -37,11 +37,11 @@ const validate = (schema, obj, next) => {
   next();
 };
 
-module.exports.reg = (req, res, next) => {
+module.exports.validateReg = (req, res, next) => {
   return validate(schemaAddUser, req.body, next);
 };
 
-module.exports.login = (req, res, next) => {
+module.exports.validateLogin = (req, res, next) => {
   return validate(schemaLogin, req.body, next);
 };
 
@@ -51,7 +51,7 @@ module.exports.validateUploadAvatar = (req, res, next) => {
       status: 'error',
       code: HttpCode.BAD_REQUEST,
       data: 'Bad request',
-      message: 'Field of avatar  with file not found',
+      message: 'Field of avatar with file not found',
     });
   }
 
