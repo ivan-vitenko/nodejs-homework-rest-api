@@ -1,5 +1,5 @@
-// import { function } from 'joi';
 const { Schema, model } = require('mongoose');
+const gravatar = require('gravatar');
 
 const bcrypt = require('bcryptjs');
 const SALT_WORK_FACTOR = 8;
@@ -21,6 +21,13 @@ const userSchema = new Schema(
       type: String,
       requaired: [true, 'Password required'],
     },
+    avatarURL: {
+      type: String,
+      default: function () {
+        return gravatar.url(this.email, { s: '250' }, true);
+      },
+    },
+    imgIdCloud: { type: String, default: null },
     subscription: {
       type: String,
       enum: ['free', 'pro', 'premium'],
