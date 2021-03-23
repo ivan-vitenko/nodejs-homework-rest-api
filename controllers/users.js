@@ -4,10 +4,12 @@ const path = require('path');
 const Jimp = require('jimp');
 const { promisify } = require('util');
 const cloudinary = require('cloudinary').v2;
+const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
 const Users = require('../model/users');
 const { HttpCode } = require('../helpers/constants');
+const EmailService = require('../services/email');
 const createFolderIsExist = require('../helpers/create-dir');
 
 const SECRET_KEY = process.env.JWT_SECRET;
@@ -34,7 +36,14 @@ const reg = async (req, res, next) => {
       });
     }
 
-    const newUser = await Users.create(req.body);
+    const verificationToken = uuidv4();
+    const emailService = new EmailService(process.env.NODE_ENV);
+    await emailService.sendEmail(verificationToken, email);
+
+    const newUser = await Users.create({
+      ...req.body,
+      verificationToken,
+    });
 
     return res.status(HttpCode.CREATED).json({
       status: 'success',
@@ -56,7 +65,7 @@ const login = async (req, res, next) => {
     const user = await Users.findByEmail(email);
     const isValidPassword = await user?.validPassword(password);
 
-    if (!user || !isValidPassword) {
+    if (!user || !isValidPassword || user.verificationToken) {
       return res.status(HttpCode.UNAUTHORIZED).json({
         status: 'error',
         code: HttpCode.UNAUTHORIZED,
@@ -190,4 +199,29 @@ const saveAvatarToCloud = async req => {
   return result;
 };
 
-module.exports = { reg, login, logout, current, avatars };
+const verify = async (req, res, next) => {
+  try {
+    const user = await Users.findByVerifyToken(req.params.verificationToken);
+
+    if (user) {
+      await Users.updateVerifyToken(user.id, null);
+
+      return res.json({
+        status: 'success',
+        code: HttpCode.OK,
+        message: 'Verification successful!',
+      });
+    }
+
+    return res.status(404).json({
+      status: 'error',
+      code: 404,
+      message: 'User not found',
+    });
+    //
+  } catch (e) {
+    next(e);
+  }
+};
+
+module.exports = { reg, login, logout, current, avatars, verify };
